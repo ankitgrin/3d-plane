@@ -10,26 +10,34 @@ import Background from "./Background";
 import { Airplane } from "./Airplane";
 import { Cloud } from "./Cloud";
 import { useMemo, useRef } from "react";
-import { CatmullRomCurve3, Euler, Quaternion, Shape, Vector3 } from "three";
+import {
+  CatmullRomCurve3,
+  Euler,
+  Group,
+  Quaternion,
+  Shape,
+  Vector3,
+} from "three";
 import { useFrame } from "@react-three/fiber";
 
 const LINE_NB_POINTS = 12000;
+const CURVE_DISTANCE = 250;
+const CURVE_AHEAD_CAMERA = 0.0008;
+const CURVE_AHEAD_AIRPLANE = 0.02;
+const AIRPLANE_MAX_ANGLE = 35;
 
 export const Experience = () => {
   const curve = useMemo(() => {
     return new CatmullRomCurve3(
       [
         new Vector3(0, 0, 0),
-        new Vector3(0, 0, -10),
-        new Vector3(-2, 0, -20),
-        new Vector3(-3, 0, -30),
-        new Vector3(0, 0, -40),
-        new Vector3(5, 0, -50),
-        new Vector3(7, 0, -60),
-        new Vector3(5, 0, -70),
-        new Vector3(0, 0, -80),
-        new Vector3(0, 0, -90),
-        new Vector3(0, 0, -100),
+        new Vector3(0, 0, -CURVE_DISTANCE),
+        new Vector3(100, 0, -2 * CURVE_DISTANCE),
+        new Vector3(-100, 0, -3 * CURVE_DISTANCE),
+        new Vector3(100, 0, -4 * CURVE_DISTANCE),
+        new Vector3(0, 0, -5 * CURVE_DISTANCE),
+        new Vector3(0, 0, -6 * CURVE_DISTANCE),
+        new Vector3(0, 0, -7 * CURVE_DISTANCE),
       ],
       false,
       "catmullrom",
@@ -53,43 +61,58 @@ export const Experience = () => {
   const scroll = useScroll();
 
   useFrame((_state, delta) => {
-    const curPointIndex = Math.min(
-      Math.round(scroll.offset * linePoints.length),
-      linePoints.length - 1
+    const scrollOffset = Math.max(0, scroll.offset);
+
+    const curPoint = curve.getPoint(scrollOffset);
+
+    // Follow the curve points
+    cameraGroup.current.position.lerp(curPoint, delta * 24);
+
+    // Make the group look ahead on the curve
+    const lookAtPoint = curve.getPoint(
+      Math.min(scrollOffset + CURVE_AHEAD_CAMERA, 1)
     );
 
-    const curPoint = linePoints[curPointIndex];
-    const pointAhead =
-      linePoints[Math.min(curPointIndex + 1, linePoints.length - 1)];
-    const xDisplacement = (pointAhead.x - curPoint.x) * 80;
+    const currentLookAt = cameraGroup.current.getWorldDirection(new Vector3());
+    const targetLookAt = new Vector3()
+      .subVectors(curPoint, lookAtPoint)
+      .normalize();
 
-    // Math.PI / 2 ==> LEFT
-    // -Math.PI / 2 ==> RIGHT
+    const lookAt = currentLookAt.lerp(targetLookAt, delta * 24);
+    cameraGroup.current.lookAt(
+      cameraGroup.current.position.clone().add(lookAt)
+    );
 
-    const angleRotation =
-      (xDisplacement < 0 ? 1 : -1) *
-      Math.min(Math.abs(xDisplacement), Math.PI / 3);
+    // Airplane rotation
+    const tangent = curve.getTangent(scrollOffset + CURVE_AHEAD_AIRPLANE);
+
+    const nonLerpLookAt = new Group();
+    nonLerpLookAt.position.copy(curPoint);
+    nonLerpLookAt.lookAt(nonLerpLookAt.position.clone().add(targetLookAt));
+
+    tangent.applyAxisAngle(new Vector3(0, 1, 0), -nonLerpLookAt.rotation.y);
+
+    let angle = Math.atan2(-tangent.z, tangent.x);
+    angle = -Math.PI / 2 + angle;
+
+    let angleDegrees = (angle * 180) / Math.PI;
+    angleDegrees *= 2.4; // stronger angle
+
+    // LIMIT PLANE ANGLE
+    if (angleDegrees < 0) {
+      angleDegrees = Math.max(angleDegrees, -AIRPLANE_MAX_ANGLE);
+    }
+    if (angleDegrees > 0) {
+      angleDegrees = Math.min(angleDegrees, AIRPLANE_MAX_ANGLE);
+    }
+
+    // SET BACK ANGLE
+    angle = (angleDegrees * Math.PI) / 180;
 
     const targetAirplaneQuaternion = new Quaternion().setFromEuler(
-      new Euler(
-        airplane.current.rotation.x,
-        airplane.current.rotation.y,
-        angleRotation
-      )
+      new Euler(airplane.current.rotation.x, airplane.current.rotation.y, angle)
     );
-
-    const targetCameraQuaternion = new Quaternion().setFromEuler(
-      new Euler(
-        cameraGroup.current.rotation.x,
-        angleRotation,
-        cameraGroup.current.rotation.z
-      )
-    );
-
     airplane.current.quaternion.slerp(targetAirplaneQuaternion, delta * 2);
-    cameraGroup.current.quaternion.slerp(targetCameraQuaternion, delta * 2);
-
-    cameraGroup.current.position.lerp(curPoint, delta * 24);
   });
 
   const airplane = useRef();
