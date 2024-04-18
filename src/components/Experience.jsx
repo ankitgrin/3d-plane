@@ -3,6 +3,7 @@ import {
   Line,
   OrbitControls,
   PerspectiveCamera,
+  Text,
   useScroll,
 } from "@react-three/drei";
 import Background from "./Background";
@@ -100,7 +101,7 @@ export const Experience = () => {
         <Background />
         <PerspectiveCamera position={[0, 0, 5]} fov={30} makeDefault />
         <group ref={airplane}>
-          <Float floatIntensity={2} speed={2}>
+          <Float floatIntensity={1} speed={1.5} rotationIntensity={0.5}>
             <Airplane
               rotation-y={Math.PI / 2}
               scale={[0.2, 0.2, 0.2]}
@@ -131,21 +132,57 @@ export const Experience = () => {
         </mesh>
       </group>
 
-      <Cloud opacity={0.5} scale={[0.3, 0.3, 0.3]} position={[-2, 1, -3]} />
-      <Cloud opacity={0.5} scale={[0.2, 0.3, 0.4]} position={[1.5, -0.5, -2]} />
+      {/* TEXT */}
+      <group position={[-3, 0, -100]}>
+        <Text
+          color="white"
+          anchorX={"left"}
+          anchorY={"middle"}
+          fontSize={0.22}
+          maxWidth={2.5}
+          font="./fonts/DMSerifDisplay-Regular.ttf"
+        >
+          Welcome to Grin!{"\n"}
+          Have a seat and enjoy the ride!
+        </Text>
+      </group>
+
+      <group position={[-10, 1, -200]}>
+        <Text
+          color="white"
+          anchorX={"left"}
+          anchorY={"middle"}
+          fontSize={0.52}
+          maxWidth={2.5}
+          font="./fonts/DMSerifDisplay-Regular.ttf"
+        >
+          Services
+        </Text>
+        <Text
+          color="white"
+          anchorX={"left"}
+          anchorY={"top"}
+          position-y={-0.66}
+          fontSize={0.22}
+          maxWidth={2.5}
+          font="./fonts/DMSerifDisplay-Regular.ttf"
+        >
+          Do you want a drink?{"\n"}
+          We have a wide range of beverages!
+        </Text>
+      </group>
+
+      <Cloud scale={[1, 1, 1.5]} position={[-3.5, -1.2, -7]} />
+      <Cloud scale={[1, 1, 2]} position={[3.5, -1, -10]} rotation-y={Math.PI} />
       <Cloud
-        opacity={0.7}
-        scale={[0.3, 0.3, 0.4]}
-        rotation-y={Math.PI / 9}
-        position={[2, -0.2, -2]}
+        scale={[1, 1, 1]}
+        position={[-3.5, 0.2, -12]}
+        rotation-y={Math.PI / 3}
       />
-      <Cloud
-        opacity={0.7}
-        scale={[0.4, 0.4, 0.4]}
-        rotation-y={Math.PI / 9}
-        position={[1, -0.2, -12]}
-      />
-      <Cloud opacity={0.7} scale={[0.5, 0.5, 0.5]} position={[-1, 1, -53]} />
+      <Cloud scale={[1, 1, 1]} position={[3.5, 0.2, -12]} />
+      <Cloud scale={[0.4, 0.4, 0.4]} position={[1, -0.2, -12]} />
+      <Cloud scale={[0.3, 0.5, 2]} position={[-4, -0.5, -53]} />
+      <Cloud scale={[0.8, 0.8, 0.8]} position={[-1, -1.5, -100]} />
     </>
   );
 };
