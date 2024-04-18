@@ -20,7 +20,7 @@ import {
 } from "three";
 import { useFrame } from "@react-three/fiber";
 
-const LINE_NB_POINTS = 12000;
+const LINE_NB_POINTS = 1000;
 const CURVE_DISTANCE = 250;
 const CURVE_AHEAD_CAMERA = 0.0008;
 const CURVE_AHEAD_AIRPLANE = 0.02;
@@ -45,14 +45,10 @@ export const Experience = () => {
     );
   }, []);
 
-  const linePoints = useMemo(() => {
-    return curve.getPoints(LINE_NB_POINTS);
-  }, [curve]);
-
   const shape = useMemo(() => {
     const shape = new Shape();
-    shape.moveTo(0, -0.2);
-    shape.lineTo(0, 0.2);
+    shape.moveTo(0, -0.08);
+    shape.lineTo(0, 0.08);
 
     return shape;
   }, [curve]);
@@ -119,6 +115,7 @@ export const Experience = () => {
 
   return (
     <>
+      <directionalLight position={[0, 3, 1]} intensity={0.1} />
       {/* <OrbitControls enableZoom={false} /> */}
       <group ref={cameraGroup}>
         <Background />
@@ -148,9 +145,9 @@ export const Experience = () => {
           />
           <meshStandardMaterial
             color={"white"}
-            opacity={0.7}
+            opacity={1}
             transparent
-            // envMapIntensity={2}
+            envMapIntensity={2}
           />
         </mesh>
       </group>
