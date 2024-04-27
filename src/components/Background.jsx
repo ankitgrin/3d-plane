@@ -1,10 +1,11 @@
 import { Environment, Sphere } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { LayerMaterial, Gradient } from "lamina";
-import React, { useRef } from "react";
-import { BackSide, Color } from "three";
+import { Gradient, LayerMaterial } from "lamina";
+import { useRef } from "react";
 
-const Background = ({ backgroundColors }) => {
+import * as THREE from "three";
+
+export const Background = ({ backgroundColors }) => {
   const start = 0.2;
   const end = -0.5;
 
@@ -12,16 +13,24 @@ const Background = ({ backgroundColors }) => {
   const gradientEnvRef = useRef();
 
   useFrame(() => {
-    gradientRef.current.colorA = new Color(backgroundColors.current.colorA);
-    gradientRef.current.colorB = new Color(backgroundColors.current.colorB);
-    gradientEnvRef.current.colorA = new Color(backgroundColors.current.colorA);
-    gradientEnvRef.current.colorB = new Color(backgroundColors.current.colorB);
+    gradientRef.current.colorA = new THREE.Color(
+      backgroundColors.current.colorA
+    );
+    gradientRef.current.colorB = new THREE.Color(
+      backgroundColors.current.colorB
+    );
+    gradientEnvRef.current.colorA = new THREE.Color(
+      backgroundColors.current.colorA
+    );
+    gradientEnvRef.current.colorB = new THREE.Color(
+      backgroundColors.current.colorB
+    );
   });
 
   return (
     <>
       <Sphere scale={[500, 500, 500]} rotation-y={Math.PI / 2}>
-        <LayerMaterial color={"#ffffff"} side={BackSide}>
+        <LayerMaterial color={"#ffffff"} side={THREE.BackSide}>
           <Gradient ref={gradientRef} axes={"y"} start={start} end={end} />
         </LayerMaterial>
       </Sphere>
@@ -31,7 +40,7 @@ const Background = ({ backgroundColors }) => {
           rotation-y={Math.PI / 2}
           rotation-x={Math.PI}
         >
-          <LayerMaterial color={"#ffffff"} side={BackSide}>
+          <LayerMaterial color={"#ffffff"} side={THREE.BackSide}>
             <Gradient ref={gradientEnvRef} axes={"y"} start={start} end={end} />
           </LayerMaterial>
         </Sphere>
@@ -39,5 +48,3 @@ const Background = ({ backgroundColors }) => {
     </>
   );
 };
-
-export default Background;
